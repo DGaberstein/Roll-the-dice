@@ -141,8 +141,29 @@ document.addEventListener('DOMContentLoaded', () => {
         camera.position.z = sides === 10 ? 6 : 5;
     }
 
+    function rollDice() {
+        clearInterval(rollInterval);
+        const sides = parseInt(diceType.value);
+        const rollDuration = 2000; // 2 seconds
+        const startTime = Date.now();
+
+        rollInterval = setInterval(() => {
+            const elapsedTime = Date.now() - startTime;
+            if (elapsedTime < rollDuration) {
+                dice.rotation.x = Math.random() * Math.PI * 2;
+                dice.rotation.y = Math.random() * Math.PI * 2;
+                dice.rotation.z = Math.random() * Math.PI * 2;
+            } else {
+                clearInterval(rollInterval);
+                const rolledNumber = Math.floor(Math.random() * sides) + 1;
+                result.textContent = `You rolled a ${rolledNumber}!`;
+            }
+        }, 50);
+    }
+
     function toggleDarkMode() {
         document.body.classList.toggle('dark-mode');
         scene.background = document.body.classList.contains('dark-mode') ? new THREE.Color(0x333333) : new THREE.Color(0xf0f0f0);
     }
 });
+
