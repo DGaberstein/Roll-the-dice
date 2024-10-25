@@ -20,19 +20,23 @@ document.addEventListener('DOMContentLoaded', () => {
         renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(300, 300);
         document.getElementById('dice-container').appendChild(renderer.domElement);
-
+    
         camera.position.z = 5;
-
+    
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
-
-        const pointLight = new THREE.PointLight(0xffffff, 0.5);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
+    
+        const pointLight1 = new THREE.PointLight(0xffffff, 0.5);
+        pointLight1.position.set(5, 5, 5);
+        scene.add(pointLight1);
+    
+        const pointLight2 = new THREE.PointLight(0xffffff, 0.3);
+        pointLight2.position.set(-5, -5, -5);
+        scene.add(pointLight2);
+    
         animate();
     }
-
+    
     function animate() {
         requestAnimationFrame(animate);
         if (dice) dice.rotation.y += 0.01;
@@ -59,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createDice(sides) {
         if (dice) scene.remove(dice);
-
+    
         let geometry, materials;
         switch (sides) {
             case 4:
@@ -84,16 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 8:
                 geometry = new THREE.OctahedronGeometry(1.5);
-                materials = [
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('1', '#ff6b6b', 48) }),
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('2', '#feca57', 48) }),
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('3', '#48dbfb', 48) }),
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('4', '#ff9ff3', 48) }),
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('5', '#54a0ff', 48) }),
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('6', '#5f27cd', 48) }),
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('7', '#ff6b6b', 48) }),
-                    new THREE.MeshPhongMaterial({ map: createDiceTexture('8', '#feca57', 48) })
-                ];
+                materials = Array(8).fill().map((_, i) => 
+                    new THREE.MeshPhongMaterial({ map: createDiceTexture(`${i + 1}`, `hsl(${i * 45}, 100%, 75%)`, 48) })
+                );
                 break;
             case 10:
                 geometry = new THREE.ConeGeometry(1, 2, 10);
@@ -114,29 +111,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
                 break;
         }
-
+    
         dice = new THREE.Mesh(geometry, materials);
+    
+        // Adjust position and rotation for specific dice types
+        switch (sides) {
+            case 4:
+                dice.rotation.x = Math.PI * 0.25;
+                dice.rotation.z = Math.PI * 0.25;
+                break;
+            case 8:
+                dice.rotation.x = Math.PI * 0.25;
+                dice.rotation.z = Math.PI * 0.25;
+                break;
+            case 10:
+                dice.rotation.x = Math.PI;
+                break;
+            case 12:
+                dice.rotation.y = Math.PI * 0.25;
+                break;
+            case 20:
+                dice.rotation.y = Math.PI * 0.25;
+                break;
+        }
+    
         scene.add(dice);
-    }
-
-    function rollDice() {
-        clearInterval(rollInterval);
-        const sides = parseInt(diceType.value);
-        const rollDuration = 2000; // 2 seconds
-        const startTime = Date.now();
-
-        rollInterval = setInterval(() => {
-            const elapsedTime = Date.now() - startTime;
-            if (elapsedTime < rollDuration) {
-                dice.rotation.x = Math.random() * Math.PI;
-                dice.rotation.y = Math.random() * Math.PI;
-                dice.rotation.z = Math.random() * Math.PI;
-            } else {
-                clearInterval(rollInterval);
-                const rolledNumber = Math.floor(Math.random() * sides) + 1;
-                result.textContent = `You rolled a ${rolledNumber}!`;
-            }
-        }, 50);
+    
+        // Adjust camera position
+        camera.position.z = sides === 10 ? 6 : 5;
     }
 
     function toggleDarkMode() {
